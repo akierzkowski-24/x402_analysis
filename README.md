@@ -1,60 +1,73 @@
-# Dune Query Repo
+# x402 Protocol Analysis
 
-A template for creating repos to [manage your Dune queries](https://dune.mintlify.app/api-reference/crud/endpoint/create) and any [CSVs as Dune tables](https://dune.mintlify.app/api-reference/upload/endpoint/upload).
+On-chain analysis of the x402 payment protocol on Solana — tracking transaction volume,
+facilitator economics, wallet growth, and user behaviour using Dune Analytics.
 
-### Setup Your Repo
-
-1. Generate an API key from your Dune account and put that in both your `.env` file and [github action secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository) (name it `DUNE_API_KEY`). You can create a key under your Dune team settings. *The api key must be from a plus plan for this repo to work.*
-
-2. Type your intended query ids into the `queries.yml` file. The id can be found from the link `https://dune.com/queries/<query_id>/...`. If you're creating this for a dashboard, go to the dashboard you want to create a repo and click on the "github" button in the top right of your dashboard to see the query ids.
-
-3. Then, run `pull_from_dune.py` to bring in all queries into `/query_{id}.sql` files within the `/queries` folder. Directions to setup and run this python script are below.
-
-### Updating Queries or CSV Tables
-
-1. Make any changes you need to directly in the repo. Any time you push a commit to MAIN branch, `push_to_dune.py` will save your changes into Dune directly. You can run this manually too if you want.
-
-2. For CSVs, update the files in the `/uploads` folder. `upload_to_dune.py` will run on commit, or can be run manually. The table name in Dune will be `dune.team_name.dataset_<filename>`.
+📊 **[Live Dashboard →](https://dune.com/kundeus/x402-first-chart-analysis)**
 
 ---
 
-### Query Management Scripts
+## Dashboard Preview
 
-You'll need python and pip installed to run the script commands. If you don't have a package manager set up, then use either [conda](https://www.anaconda.com/download) or [poetry](https://python-poetry.org/) . Then install the required packages:
-
-```
-pip install -r requirements.txt
-```
-
-| Script | Action                                                                                                                                                    | Command |
-|---|-----------------------------------------------------------------------------------------------------------------------------------------------------------|---|
-| `pull_from_dune.py` | updates/adds queries to your repo based on ids in `queries.yml`                                                                                           | `python scripts/pull_from_dune.py` |
-| `push_to_dune.py` | updates queries to Dune based on files in your `/queries` folder                                                                                          | `python scripts/push_to_dune.py` |
-| `preview_query.py` | gives you the first 20 rows of results by running a query from your `/queries` folder. Specify the id. This uses Dune API credits | `python scripts/preview_query.py 2615782` |
-| `upload_to_dune.py` | uploads/updates any tables from your `/uploads` folder. Must be in CSV format, and under 200MB. | `python scripts/upload_to_dune.py` |
+<img width="1732" height="1116" alt="image" src="https://github.com/user-attachments/assets/370c5d4c-88c6-4cde-9c81-0dd4df2da189" />
 
 ---
 
-### Things to be aware of
+## Queries
 
-💡: Names of queries are pulled into the file name the first time `pull_from_dune.py` is run. Changing the file name in app or in folder will not affect each other (they aren't synced). **Make sure you leave the `___id.sql` at the end of the file, otherwise the scripts will break!**
+### Volume & Transactions
+| Query | Description |
+|---|---|
+| `tx_count.sql` | Total transaction count over time |
+| `weekly_tx_count.sql` | Weekly transaction cadence |
+| `tx_size_per_month.sql` | Average transaction size per month |
+| `volume_and_tx_worth.sql` | USD volume alongside per-tx value |
+| `last_week_usd_volume.sql` | Rolling last-week volume snapshot |
+| `tx_count_last_90_by_facilitator.sql` | 90-day transaction breakdown by facilitator |
 
-🟧: Make sure to leave in the comment `-- already part of a query repo` at the top of your file. This will hopefully help prevent others from using it in more than one repo.
+### Facilitator Economics
+| Query | Description |
+|---|---|
+| `facilitator_share.sql` | Overall fee share per facilitator |
+| `facilitator_share_by_tx_count.sql` | Share weighted by transaction count |
+| `facilitator_share_over_weeks.sql` | Facilitator share trend over time |
+| `facilitator_share_weekly.sql` | Weekly fee share per facilitator |
+| `facilitator_share_weekly_by_tx_count.sql` | Weekly share by tx count |
+| `average_worth_per_facilitator.sql` | Average transaction value per facilitator |
 
-🔒: Queries must be owned by the team the API key was created under - otherwise you won't be able to update them from the repo.
+### Wallet & User Activity
+| Query | Description |
+|---|---|
+| `total_wallets.sql` | Cumulative wallet count |
+| `unique_wallet_count.sql` | Unique active wallets over time |
+| `new_wallets_monthly.sql` | Monthly new wallet acquisition |
+| `user_retention.sql` | Cohort retention of wallets |
+| `user_split.sql` | Distribution of users by activity level |
+| `current_tx_profile.sql` | Snapshot of current transaction patterns |
 
-➕: If you want to add a query, add it in Dune app first then pull the query id (from URL `dune.com/queries/{id}/other_stuff`) into `queries.yml`
-
-🛑: If you accidently merge a PR or push a commit that messes up your query in Dune, you can roll back any changes using [query version history](https://dune.com/docs/app/query-editor/version-history).
+### Chain & Data Basis
+| Query | Description |
+|---|---|
+| `chain_domination.sql` | x402 share of relevant on-chain activity |
+| `IMPORTANT_2025_data_basis.sql` | Base dataset — 2025 historical transactions |
+| `IMPORTANT_data_since_2026.sql` | Base dataset — 2026 transactions to present |
 
 ---
 
-### For Contributors
+## About x402
 
-I've set up four types of issues right now:
-- `bugs`: This is for data quality issues like miscalculations or broken queries.
-- `chart improvements`: This is for suggesting improvements to the visualizations.
-- `query improvements`: This is for suggesting improvements to the query itself, such as adding an extra column or table that enhances the results.
-- `generic questions`: This is a catch all for other questions or suggestions you may have about the dashboard.
+x402 is a Solana-native payment protocol enabling programmable on-chain payments with
+native fee splitting between facilitators and the protocol. This analysis tracks adoption
+metrics, facilitator competition, and user retention since launch.
 
-If you want to contribute, either start an issue or go directly into making a PR (using the same labels as above). Once the PR is merged, the queries will get updated in the frontend.
+---
+
+## Links
+
+- 🔗 [Dune Dashboard](https://dune.com/kundeus/x402-first-chart-analysis)
+- 💼 [LinkedIn](https://www.linkedin.com/posts/adam-kierzkowski-ak07_web3-defi-onchainanalytics-ugcPost-7444690584285503488-4UXe?utm_source=share&utm_medium=member_desktop&rcm=ACoAAF6DFYsBum_jCmnOfK3fNDoHCsvjA8K6UiA)
+- ✍️ [Substack](https://substack.com/home/post/p-192623635)
+
+---
+
+*Built with [Dune Analytics](https://dune.com)*
