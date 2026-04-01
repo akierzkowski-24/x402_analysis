@@ -1,0 +1,247 @@
+-- x402 Volume by Facilitator and Chain (from the start of 2026 onwards)
+-- Analyzes wallets on x402 protocol accross chains, facilitators and time
+-- 92 Base addresses, 35 Polygon addresses, 19 Solana addresses across 28 named facilitators
+
+WITH base_facilitator_map AS (
+    SELECT * FROM (VALUES
+        (0xeFC1e204720ce5e713704d1819e47ca7Fab3B757, 'OctonetAI (Octox402)'),
+        (0xc6699d2aada6c36dfea5c248dd70f9cb0235cb63, 'PayAI'),
+        (0xb2bd29925cbbcea7628279c91945ca5b98bf371b, 'PayAI'),
+        (0x25659315106580ce2a787ceec5efb2d347b539c9, 'PayAI'),
+        (0xb8f41cb13b1f213da1e94e1b742ec1323235c48f, 'PayAI'),
+        (0xe575fa51af90957d66fab6d63355f1ed021b887b, 'PayAI'),
+        (0xf46833d4ac4f0f1405cc05c30edfd86770f721c9, 'PayAI'),
+        (0x2Fae4026a31F19183947f0A6045ef975EBFA9cA8, 'PayAI'),
+        (0x675707bc7d03089f820c1b7d49f7480083e8f4df, 'PayAI'),
+        (0xdbdf3d8ed80f84c35d01c6c9f9271761bad90ba6, 'CDP (Coinbase)'),
+        (0x9aae2b0d1b9dc55ac9bab9556f9a26cb64995fb9, 'CDP (Coinbase)'),
+        (0x3a70788150c7645a21b95b7062ab1784d3cc2104, 'CDP (Coinbase)'),
+        (0x708e57b6650a9a741ab39cae1969ea1d2d10eca1, 'CDP (Coinbase)'),
+        (0xce82eeec8e98e443ec34fda3c3e999cbe4cb6ac2, 'CDP (Coinbase)'),
+        (0x7f6d822467df2a85f792d4508c5722ade96be056, 'CDP (Coinbase)'),
+        (0x001ddabba5782ee48842318bd9ff4008647c8d9c, 'CDP (Coinbase)'),
+        (0x9c09faa49c4235a09677159ff14f17498ac48738, 'CDP (Coinbase)'),
+        (0xcbb10c30a9a72fae9232f41cbbd566a097b4e03a, 'CDP (Coinbase)'),
+        (0x9fb2714af0a84816f5c6322884f2907e33946b88, 'CDP (Coinbase)'),
+        (0x47d8b3c9717e976f31025089384f23900750a5f4, 'CDP (Coinbase)'),
+        (0x94701e1df9ae06642bf6027589b8e05dc7004813, 'CDP (Coinbase)'),
+        (0x552300992857834c0ad41c8e1a6934a5e4a2e4ca, 'CDP (Coinbase)'),
+        (0xd7469bf02d221968ab9f0c8b9351f55f8668ac4f, 'CDP (Coinbase)'),
+        (0x88800e08e20b45c9b1f0480cf759b5bf2f05180c, 'CDP (Coinbase)'),
+        (0x6831508455a716f987782a1ab41e204856055cc2, 'CDP (Coinbase)'),
+        (0xdc8fbad54bf5151405de488f45acd555517e0958, 'CDP (Coinbase)'),
+        (0x91d313853ad458addda56b35a7686e2f38ff3952, 'CDP (Coinbase)'),
+        (0xadd5585c776b9b0ea77e9309c1299a40442d820f, 'CDP (Coinbase)'),
+        (0x4ffeffa616a1460570d1eb0390e264d45a199e91, 'CDP (Coinbase)'),
+        (0xd8dfc729cbd05381647eb5540d756f4f8ad63eec, 'x402.rs'),
+        (0x76eee8f0acabd6b49f1cc4e9656a0c8892f3332e, 'x402.rs'),
+        (0x97d38aa5de015245dcca76305b53abe6da25f6a5, 'x402.rs'),
+        (0x0168f80e035ea68b191faf9bfc12778c87d92008, 'x402.rs'),
+        (0x5e437bee4321db862ac57085ea5eb97199c0ccc5, 'x402.rs'),
+        (0xc19829b32324f116ee7f80d193f99e445968499a, 'x402.rs'),
+        (0x97316fa4730bc7d3b295234f8e4d04a0a4c093e8, 'OpenX402.ai'),
+        (0x97db9b5291a218fc77198c285cefdc943ef74917, 'OpenX402.ai'),
+        (0xe07e9cbf9a55d02e3ac356ed4706353d98c5a618, 'Treasure'),
+        (0xfe0920a0a7f0f8a1ec689146c30c3bbef439bf8a, 'Mogami'),
+        (0x80c08de1a05df2bd633cf520754e40fde3c794d3, 'thirdweb'),
+        (0x179761d9eed0f0d1599330cc94b0926e68ae87f1, 'AnySpend'),
+        (0x103040545ac5031a11e8c03dd11324c7333a13c7, 'Ultravioleta DAO'),
+        (0x3be45f576696a2fd5a93c1330cd19f1607ab311d, 'xEcho'),
+        (0x222c4367a2950f3b53af260e111fc3060b0983ff, 'AurraCloud'),
+        (0xb70c4fe126de09bd292fe3d1e40c6d264ca6a52a, 'AurraCloud'),
+        (0xd348e724e0ef36291a28dfeccf692399b0e179f8, 'AurraCloud'),
+        (0x279e08f711182c79Ba6d09669127a426228a4653, 'Daydreams'),
+        (0x73b2b8df52fbe7c40fe78db52e3dffdd5db5ad07, '402104'),
+        (0x724efafb051f17ae824afcdf3c0368ae312da264, 'Questflow'),
+        (0xa9a54ef09fc8b86bc747cec6ef8d6e81c38c6180, 'Questflow'),
+        (0x4638bc811c93bf5e60deed32325e93505f681576, 'Questflow'),
+        (0xd7d91a42dfadd906c5b9ccde7226d28251e4cd0f, 'Questflow'),
+        (0x4544b535938b67d2a410a98a7e3b0f8f68921ca7, 'Questflow'),
+        (0x59e8014a3b884392fbb679fe461da07b18c1ff81, 'Questflow'),
+        (0xe6123e6b389751c5f7e9349f3d626b105c1fe618, 'Questflow'),
+        (0xf70e7cb30b132fab2a0a5e80d41861aa133ea21b, 'Questflow'),
+        (0x90da501fdbec74bb0549100967eb221fed79c99b, 'Questflow'),
+        (0xce7819f0b0b871733c933d1f486533bab95ec47b, 'Questflow'),
+        (0x4a288FA07fC40F701e4fd2620F0a14338e12a4D7, 'Questflow'),
+        (0x8d8Fa42584a727488eeb0E29405AD794a105bb9b, 'CodeNut'),
+        (0x87aF99356d774312B73018b3B6562e1aE0e018C9, 'CodeNut'),
+        (0x65058CF664D0D07f68B663B0D4b4f12A5E331a38, 'CodeNut'),
+        (0x88E13D4c764a6c840Ce722A0a3765f55A85b327E, 'CodeNut'),
+        (0x80735b3f7808e2e229ace880dbe85e80115631ca, 'Virtuals Protocol'),
+        (0xb578b7db22581507d62bdbeb85e06acd1be09e11, 'Heurist'),
+        (0x021cc47adeca6673def958e324ca38023b80a5be, 'Heurist'),
+        (0x3f61093f61817b29d9556d3b092e67746af8cdfd, 'Heurist'),
+        (0x290d8b8edcafb25042725cb9e78bcac36b8865f8, 'Heurist'),
+        (0x612d72dc8402bba997c61aa82ce718ea23b2df5d, 'Heurist'),
+        (0x1fc230ee3c13d0d520d49360a967dbd1555c8326, 'Heurist'),
+        (0x48ab4b0af4ddc2f666a3fcc43666c793889787a3, 'Heurist'),
+        (0xd97c12726dcf994797c981d31cfb243d231189fb, 'Heurist'),
+        (0x90d5e567017f6c696f1916f4365dd79985fce50f, 'Heurist'),
+        (0xe4a1e17f764ae9c99318599f3309e81ac8a16d59, 'SOON'),
+        (0x109f3d0ff7ea61b03df26ca7ef0c41765d85ee0b, 'AInalyst'),
+        (0x6f26780f7e7e1d3e68afa3161a4680ca6e5276e5, 'Amiko'),
+        (0x448Ed823E8058b171377de0f42D267417D0E3c1E, 'Mflo'),
+        (0x0852a46253b28e6bd9dbb676b445da5e5df8a595, 'X402x'),
+        (0x26b10c2a56dc94b479ec8d77dd756492c33f32bb, 'X402x'),
+        (0xdcf9adc84dd18b74fa37f7068436ec22eb45857d, 'X402x'),
+        (0x194c26e69b6cad044b80a6b25e43bdb381743d28, 'X402x'),
+        (0x6c9e645d9a2f1eaae1fc84b2e3acb80ab5da6535, 'X402x'),
+        (0x30f0e97d13ef6b7d08130b2569c40cfc5dc33cc0, 'X402x'),
+        (0x3b37152a76d4e55162552f54da919580e9ee7b07, 'X402x'),
+        (0x7873a8874d903c0e548557dc94101cb5f23f0057, 'X402x'),
+        (0xcf3d25f66fc21f7c23a6af7298bbb844b03636ec, 'X402x'),
+        (0xd15fcaee825b48d402e2148877999bea8efd9e01, 'X402x'),
+        (0xf191ee96f115beb213947147a12a4afbcaa42e1d, 'X402x'),
+        (0x7C766F5fd9Ab3Dc09ACad5ECfacc99c4781efe29, 'OpenFacilitator'),
+        (0x67a3176Acd5Db920747eef65b813B028Ad143CdB, 'Kobaru'),
+        (0x51fEC16843E49b99aAF9814e525Aee1756E66a62, 'x402jobs'),
+        (0x3210d7b21bfe1083c9dddbe17e8f947c9029a584, 'Meridian'),
+        (0x742d35cc6634c0532925a3b844bc9e7595f0bee4, 'Kamiyo'),
+        (0x40272E2eAc848Ea70db07Fd657D799bD309329C4, 'Dexter')
+    ) AS t(address, facilitator_name)
+),
+
+polygon_facilitator_map AS (
+    SELECT * FROM (VALUES
+        (0xeFC1e204720ce5e713704d1819e47ca7Fab3B757, 'OctonetAI (Octox402)'),
+        (0xd8dfc729cbd05381647eb5540d756f4f8ad63eec, 'x402.rs'),
+        (0x80c08de1a05df2bd633cf520754e40fde3c794d3, 'thirdweb'),
+        (0x179761D9EEd0F0d1599330CC94B0926e68aE87F1, 'AnySpend'),
+        (0x40272E2eAc848Ea70db07Fd657D799bD309329C4, 'Dexter'),
+        (0x103040545ac5031a11e8c03dd11324c7333a13c7, 'Ultravioleta DAO'),
+        (0xc6699d2aada6c36dfea5c248dd70f9cb0235cb63, 'PayAI'),
+        (0xb2bd29925cbbcea7628279c91945ca5b98bf371b, 'PayAI'),
+        (0x0a8B10FE8Bd3072351600Adef4796F3F7aF72Ab0, 'Polygon'),
+        (0x11DA3fe5ADA6f5382Ebe972f14C3585DA4E65AeA, 'Polygon'),
+        (0x135DfE729F9bbd7F88181E1B708d7506fd499140, 'Polygon'),
+        (0x153F3A70e4400c211d9B482b62aD721Bb02F96F6, 'Polygon'),
+        (0x1e48Ed59a502D0B324CdAf83362865b3ff49ABa2, 'Polygon'),
+        (0x29df60c005506AA325d7179F6e09eB4b4875dAde, 'Polygon'),
+        (0x3202643514D128FF0B4625D2682c0244CF58131c, 'Polygon'),
+        (0x42618f623Ec19beFf78dE9DbBFB653BfEaC05D09, 'Polygon'),
+        (0x5eAb3D78264Dab340340d6a37Ff0836464Ae5773, 'Polygon'),
+        (0x76FCb8ae3365A487E6EA235386C1cf3AbADeDA60, 'Polygon'),
+        (0x9523B120C75640469f1D16490Da0388928229452, 'Polygon'),
+        (0x971b4079A618F72Fa0F1792b07ed5923dfBF3500, 'Polygon'),
+        (0x99EFc08BB42282716fB59D221792f5207f714C9d, 'Polygon'),
+        (0x9e281D4e26E1a4e7C27014E2ca8Cee7F2D44fa52, 'Polygon'),
+        (0xA1dcBDC2C34577ACD4A1152A98807B2f281A112e, 'Polygon'),
+        (0xDcb0Ac359025dC0DB1e22e6d33F404e5c92A1564, 'Polygon'),
+        (0xE5D4197eFd5D03E3f30cBf11C0fF63Eb95a0A656, 'Polygon'),
+        (0xF09A94831C18566781f70937f0996B96EfE691C8, 'Polygon'),
+        (0xF744e153Ef63f7EEe4a58e0F13761D16C2125EE3, 'Polygon'),
+        (0xaFdbfaCb5ed691bf0bCFA660901f299ce9775489, 'Polygon'),
+        (0xbE5115800247405f020197BF473eBFd085a2C635, 'Polygon'),
+        (0xd5dD012019C58882Dd507A8b3fCBB7b62e9a24c3, 'Polygon'),
+        (0xfac8Edb989f1ba7F9dBb7A1233542D4e1fD6144F, 'Polygon'),
+        (0xfff23108338C218F895d75980E14688218D4E92a, 'Polygon'),
+        (0x742d35cc6634c0532925a3b844bc9e7595f0bee4, 'Kamiyo'),
+        (0x06F0BfD2C8f36674DF5cdE852c1eeD8025C268C9, 'Corbits')
+    ) AS t(address, facilitator_name)
+),
+
+solana_facilitator_map AS (
+    SELECT * FROM (VALUES
+        ('39uhTfNLqBiPvNQXeK1baNcScaVTCEj4iTxQwbEJukU1', 'OctonetAI (Octox402)'),
+        ('2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4', 'PayAI'),
+        ('8B5UKhwfAyFW67h58cBkQj1Ur6QXRgwWJJcQp8ZBsDPa', 'PayAI'),
+        ('CjNFTjvBhbJJd2B5ePPMHRLx1ELZpa8dwQgGL727eKww', 'PayAI'),
+        ('L54zkaPQFeTn1UsEqieEXBqWrPShiaZEPD7mS5WXfQg', 'CDP (Coinbase)'),
+        ('AepWpq3GQwL8CeKMtZyKtKPa7W91Coygh3ropAJapVdU', 'Corbits'),
+        ('5xvht4fYDs99yprfm4UeuHSLxMBRpotfBtUCQqM3oDNG', 'OpenX402.ai'),
+        ('34DmdeSbEnng2bmbSj9ActckY49km2HdhiyAwyXZucqP', 'AnySpend'),
+        ('F742C4VfFLQ9zRQyithoj5229ZgtX2WqKCSFKgH2EThq', 'Ultravioleta DAO'),
+        ('8x8CzkTHTYkW18frrTR7HdCV6fsjenvcykJAXWvoPQW', 'AurraCloud'),
+        ('DEXVS3su4dZQWTvvPnLDJLRK1CeeKG6K3QqdzthgAkNV', 'Dexter'),
+        ('DuQ4jFMmVABWGxabYHFkGzdyeJgS1hp4wrRuCtsJgT9a', 'Daydreams'),
+        ('HsozMJWWHNADoZRmhDGKzua6XW6NNfNDdQ4CkE9i5wHt', 'CodeNut'),
+        ('34n7XkGa3w7Uc9cmtvj4Vc2aS18LgSQyQ27MgVcrH5X9', 'SOON'),
+        ('EKQvCrdQvJEtSGfoFiHPYfr53wtpPx4SZxHUPMcQZDVr', 'Amiko'),
+        ('Hbe1vdFs4EQVVAzcV12muHhr6DEKwrT9roMXGPLxLBLP', 'OpenFacilitator'),
+        ('DGPxUsg8CXEAaniz7Qo5jXJpn5oGGBtWKQGcF2Z9XjKi', 'Kobaru'),
+        ('561oabzy81vXYYbs1ZHR1bvpiEr6Nbfd6PGTxPshoz4p', 'x402jobs'),
+        ('KAMiYo7XwXVQcFhkfhC4RHApURAcqRHF8tF9WoZHkYR', 'Kamiyo')
+    ) AS t(address, facilitator_name)
+),
+
+base_facilitator_txs AS (
+    SELECT
+        'base' as blockchain,
+        hash as tx_hash,
+        block_time,
+        bfm.facilitator_name
+    FROM base.transactions bt
+    INNER JOIN base_facilitator_map bfm ON bt."from" = bfm.address
+    WHERE block_time >= TIMESTAMP '2026-01-01'
+        AND block_time < DATE_TRUNC('week', NOW())
+),
+
+polygon_facilitator_txs AS (
+    SELECT
+        'polygon' as blockchain,
+        hash as tx_hash,
+        block_time,
+        pfm.facilitator_name
+    FROM polygon.transactions pt
+    INNER JOIN polygon_facilitator_map pfm ON pt."from" = pfm.address
+    WHERE block_time >= TIMESTAMP '2026-01-01'
+        AND block_time < DATE_TRUNC('week', NOW())
+),
+
+evm_facilitator_txs AS (
+    SELECT * FROM base_facilitator_txs
+    UNION ALL
+    SELECT * FROM polygon_facilitator_txs
+),
+
+evm_x402_transfers AS(
+    SELECT
+        t.blockchain,
+        eft.facilitator_name,
+        CAST (t."from" AS VARCHAR) AS payer_wallet,
+        t.amount_usd,
+        eft.block_time,
+        DATE_TRUNC('week', eft.block_time) AS week
+    FROM evm_facilitator_txs AS eft
+    INNER JOIN tokens.transfers AS t ON eft.tx_hash = t.tx_hash 
+        AND eft.blockchain = t.blockchain
+    WHERE t.contract_address IN (
+    0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913,  -- Base USDC
+    0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359,  -- Polygon USDC (native)
+    0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174   -- Polygon USDC.e (bridged)
+    )
+        AND t.block_time >= TIMESTAMP '2026-01-01'
+        AND t.block_time < DATE_TRUNC('week', NOW())
+),
+
+solana_x402_transfers AS(
+    SELECT
+        'solana' AS blockchain,
+        sfm.facilitator_name,
+        t.from_owner AS payer_wallet,
+        t.amount_usd,
+        t.block_time,
+        DATE_TRUNC('week', t.block_time) AS week
+    FROM solana_facilitator_map AS sfm
+    INNER JOIN tokens_solana.transfers AS t ON t.tx_signer = sfm.address
+    WHERE token_mint_address = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+        AND block_time >= TIMESTAMP '2026-01-01'
+        AND block_time < DATE_TRUNC('week', NOW())
+),
+
+all_x402_transfers AS (
+    SELECT * FROM evm_x402_transfers
+    UNION ALL
+    SELECT * FROM solana_x402_transfers
+)
+
+SELECT
+    payer_wallet,
+    blockchain,
+    week,
+    facilitator_name,
+    COUNT(*) AS tx_count,
+    SUM(amount_usd) AS total_spend_usd
+FROM all_x402_transfers
+GROUP BY payer_wallet, blockchain, facilitator_name, week
+
