@@ -1,0 +1,11 @@
+WITH all_x402 AS (
+    SELECT * 
+    FROM dune.kundeus.result_raw_x402_historical
+    UNION ALL
+    SELECT * 
+    FROM dune.kundeus.result_x_402_updating
+)
+
+SELECT ROUND(SUM(total_spend_usd), 0) AS total_volume
+FROM all_x402
+WHERE week = DATE_TRUNC('week', NOW()) - INTERVAL '7' DAY
